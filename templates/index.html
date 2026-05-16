@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COPD Risk Predictor</title>
+  <style>
+    :root {
+      --bg: #edf4f2;
+      --card: #ffffff;
+      --soft: #f7fbfa;
+      --text: #1f2933;
+      --muted: #5f6f7a;
+      --line: #d7e3df;
+      --primary: #136f63;
+      --primary-dark: #0e5c52;
+      --blue: #234e70;
+      --danger: #b42318;
+      --success: #16703a;
+      --shadow: 0 16px 36px rgba(24, 52, 49, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        linear-gradient(135deg, rgba(19, 111, 99, 0.12), transparent 38%),
+        linear-gradient(315deg, rgba(35, 78, 112, 0.10), transparent 32%),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 980px;
+      margin: 28px auto;
+      padding: 0 18px 36px;
+    }
+
+    .hero {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 28px;
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+    }
+
+    .student-name {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .student-name strong {
+      color: var(--text);
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      color: var(--blue);
+      font-size: clamp(30px, 5vw, 48px);
+      line-height: 1.05;
+    }
+
+    .hero p {
+      max-width: 760px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .stat {
+      background: var(--soft);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 14px;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 22px;
+      color: var(--text);
+    }
+
+    .stat span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .result {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-left: 7px solid var(--primary);
+      border-radius: 12px;
+      padding: 20px 22px;
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+    }
+
+    .result.high { border-left-color: var(--danger); }
+    .result.low { border-left-color: var(--success); }
+
+    .result h2 {
+      margin-top: 0;
+    }
+
+    .badge {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 13px;
+      font-weight: bold;
+      background: #eef6ff;
+      color: var(--blue);
+    }
+
+    .high .badge {
+      background: #fff0ed;
+      color: var(--danger);
+    }
+
+    .low .badge {
+      background: #ecfdf3;
+      color: var(--success);
+    }
+
+    .result-value {
+      margin: 10px 0 4px;
+      font-size: 42px;
+      line-height: 1;
+      font-weight: bold;
+      color: var(--text);
+    }
+
+    .form-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .form-card > h2 {
+      margin: 0 0 6px;
+      color: var(--blue);
+      font-size: 24px;
+    }
+
+    .intro {
+      margin: 0 0 22px;
+      color: var(--muted);
+    }
+
+    .examples {
+      background: #f4fbfa;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+
+    .examples h3 {
+      margin: 0 0 4px;
+      color: var(--blue);
+      font-size: 18px;
+    }
+
+    .examples p {
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .example-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .example-btn {
+      background: white;
+      color: var(--primary-dark);
+      border: 1px solid #b8ded7;
+      border-radius: 999px;
+      padding: 9px 13px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: none;
+    }
+
+    .example-btn:hover {
+      background: #e5f4f1;
+    }
+
+    .example-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+
+    .step-list {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 18px 0 0;
+    }
+
+    .step {
+      background: var(--soft);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .step strong {
+      display: block;
+      color: var(--blue);
+      margin-bottom: 3px;
+    }
+
+    fieldset {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      margin: 0 0 18px;
+      padding: 18px;
+      background: #fcfefe;
+    }
+
+    legend {
+      padding: 0 8px;
+      color: var(--primary-dark);
+      font-weight: bold;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 6px;
+      font-size: 14px;
+      color: #26343d;
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-height: 42px;
+      padding: 9px 10px;
+      border: 1px solid #b7c9c4;
+      border-radius: 8px;
+      font-size: 15px;
+      background: white;
+      color: var(--text);
+    }
+
+    input:focus,
+    select:focus {
+      outline: 3px solid rgba(19, 111, 99, 0.20);
+      border-color: var(--primary);
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    button {
+      background: var(--primary);
+      color: white;
+      border: 0;
+      border-radius: 10px;
+      padding: 13px 22px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(19, 111, 99, 0.24);
+    }
+
+    button:hover {
+      background: var(--primary-dark);
+    }
+
+    .secondary-btn {
+      background: white;
+      color: var(--primary-dark);
+      border: 1px solid #b8ded7;
+      box-shadow: none;
+    }
+
+    .secondary-btn:hover {
+      background: #e5f4f1;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .field-note {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .error {
+      color: var(--danger);
+      background: #fff4f2;
+      border: 1px solid #f3b8b2;
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 14px;
+    }
+
+    @media (max-width: 720px) {
+      .container {
+        margin: 14px auto;
+        padding: 0 12px 28px;
+      }
+
+      .hero,
+      .form-card {
+        padding: 18px;
+      }
+
+      .stats,
+      .grid,
+      .step-list {
+        grid-template-columns: 1fr;
+      }
+
+      .actions {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      button,
+      .action-buttons {
+        width: 100%;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  {% macro select_field(name, label) %}
+    <div>
+      <label for="{{ name }}">{{ label }}</label>
+      <select id="{{ name }}" name="{{ name }}">
+        {% for item in options[name] %}
+          {% set selected_value = form_data[name] if form_data else categorical_defaults.get(name) %}
+          <option value="{{ item }}" {% if item == selected_value %}selected{% endif %}>{{ item }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  {% endmacro %}
+
+  {% macro number_field(name, label, step='1', min_value='0') %}
+    <div>
+      <label for="{{ name }}">{{ label }}</label>
+      <input
+        id="{{ name }}"
+        name="{{ name }}"
+        type="number"
+        step="{{ step }}"
+        min="{{ min_value }}"
+        value="{{ form_data[name] if form_data else defaults[name] }}"
+        required
+      >
+    </div>
+  {% endmacro %}
+
+  <main class="container">
+    <section class="hero">
+      <h1>COPD Risk Predictor</h1>
+      <p class="student-name">Prepared by <strong>Menna Allah AlSayed</strong></p>
+      <p>
+        This project estimates the chance that a person may report COPD, emphysema, or chronic bronchitis
+        based on BRFSS 2022 health survey answers.
+      </p>
+
+      <div class="step-list" aria-label="How to use this form">
+        <div class="step">
+          <strong>1. Try an example</strong>
+          Use a preset to test the app quickly.
+        </div>
+        <div class="step">
+          <strong>2. Edit answers</strong>
+          Change any field to create your own case.
+        </div>
+        <div class="step">
+          <strong>3. Predict</strong>
+          Submit to see the model result.
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <strong>{{ "{:,}".format(rows) }}</strong>
+          <span>valid rows</span>
+        </div>
+        <div class="stat">
+          <strong>47</strong>
+          <span>model features</span>
+        </div>
+        <div class="stat">
+          <strong>{{ "%.3f"|format(metrics.roc_auc) }}</strong>
+          <span>ROC-AUC</span>
+        </div>
+        <div class="stat">
+          <strong>{{ threshold }}%</strong>
+          <span>threshold</span>
+        </div>
+      </div>
+    </section>
+
+    {% if prediction %}
+      <section class="result {{ risk }}" aria-live="polite">
+        <h2>Prediction Result</h2>
+        <span class="badge">{{ prediction }}</span>
+        <div class="result-value">{{ probability }}%</div>
+        <p class="note">Estimated COPD risk probability. This is for coursework only, not a medical diagnosis.</p>
+      </section>
+    {% endif %}
+
+    <section class="form-card">
+      <h2>Enter Patient Information</h2>
+      <p class="intro">Fill in the main health and lifestyle details, then run the prediction.</p>
+
+      <div class="examples">
+        <h3>Quick examples</h3>
+        <p>Click one button to fill the form with a sample case.</p>
+        <div class="example-buttons">
+          <button class="example-btn" type="button" data-example="low">Low-risk adult</button>
+          <button class="example-btn" type="button" data-example="medium">Moderate-risk adult</button>
+          <button class="example-btn" type="button" data-example="high">High-risk adult</button>
+        </div>
+      </div>
+
+      <form method="POST" action="/predict" id="riskForm">
+        <fieldset>
+          <legend>Basic Information</legend>
+          <div class="grid">
+            {{ number_field('Age', 'Age', '1', '18') }}
+            {{ number_field('BMI', 'BMI', '0.1', '10') }}
+            {{ select_field('Sex', 'Sex') }}
+            {{ select_field('AgeGroup', 'Age group') }}
+            {{ select_field('GeneralHealth', 'General health') }}
+            {{ number_field('SleepHours', 'Sleep hours', '0.5', '1') }}
+          </div>
+          <span class="field-note">Tip: keep age and age group consistent for cleaner testing.</span>
+        </fieldset>
+
+        <fieldset>
+          <legend>Health Days</legend>
+          <div class="grid">
+            {{ number_field('PhysicalHealthDays', 'Physical health days in last 30 days', '1', '0') }}
+            {{ number_field('MentalHealthDays', 'Mental health days in last 30 days', '1', '0') }}
+            {{ select_field('PhysicalDistressFlag', 'Frequent physical distress') }}
+            {{ select_field('MentalDistressFlag', 'Frequent mental distress') }}
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Medical History</legend>
+          <div class="grid">
+            {{ select_field('AsthmaEver', 'Ever had asthma') }}
+            {{ select_field('AsthmaCurrent', 'Currently has asthma') }}
+            {{ select_field('HeartAttack', 'Heart attack') }}
+            {{ select_field('CoronaryHeartDisease', 'Coronary heart disease') }}
+            {{ select_field('Stroke', 'Stroke') }}
+            {{ select_field('Diabetes', 'Diabetes') }}
+            {{ select_field('Depression', 'Depression') }}
+            {{ select_field('KidneyDisease', 'Kidney disease') }}
+            {{ select_field('Arthritis', 'Arthritis') }}
+            {{ select_field('DifficultyWalking', 'Difficulty walking') }}
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Lifestyle</legend>
+          <div class="grid">
+            {{ select_field('ExercisePastMonth', 'Exercised in past month') }}
+            {{ select_field('Smoked100', 'Smoked at least 100 cigarettes') }}
+            {{ select_field('SmokingFrequency', 'Smoking frequency') }}
+            {{ select_field('CurrentSmokerFlag', 'Current smoker') }}
+            {{ select_field('AlcoholPast30Days', 'Alcohol in past 30 days') }}
+            {{ number_field('AvgDrinksPerOccasion', 'Average drinks per occasion', '0.1', '0') }}
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Healthcare Access</legend>
+          <div class="grid">
+            {{ select_field('HasInsuranceFlag', 'Has health insurance') }}
+            {{ select_field('HasPersonalDoctor', 'Has personal doctor') }}
+            {{ select_field('CouldNotAffordDoctor', 'Could not afford doctor') }}
+            {{ select_field('RecentCheckup', 'Last routine checkup') }}
+          </div>
+        </fieldset>
+
+        <div class="actions">
+          <p class="note">Some model fields are filled automatically with default values to keep the form simple.</p>
+          <div class="action-buttons">
+            <button class="secondary-btn" type="reset">Reset form</button>
+            <button type="submit" id="submitBtn">Predict COPD Risk</button>
+          </div>
+        </div>
+
+        {% if error %}
+          <div class="error" role="alert">{{ error }}</div>
+        {% endif %}
+      </form>
+    </section>
+  </main>
+
+  <script>
+    const examples = {
+      low: {
+        Age: "32",
+        BMI: "23.5",
+        Sex: "Female",
+        AgeGroup: "30-34",
+        GeneralHealth: "Very good",
+        SleepHours: "7",
+        PhysicalHealthDays: "0",
+        MentalHealthDays: "1",
+        PhysicalDistressFlag: "No",
+        MentalDistressFlag: "No",
+        AsthmaEver: "No",
+        AsthmaCurrent: "No",
+        HeartAttack: "No",
+        CoronaryHeartDisease: "No",
+        Stroke: "No",
+        Diabetes: "No",
+        Depression: "No",
+        KidneyDisease: "No",
+        Arthritis: "No",
+        DifficultyWalking: "No",
+        ExercisePastMonth: "Yes",
+        Smoked100: "No",
+        SmokingFrequency: "Not at all",
+        CurrentSmokerFlag: "No",
+        AlcoholPast30Days: "No",
+        AvgDrinksPerOccasion: "1",
+        HasInsuranceFlag: "Yes",
+        HasPersonalDoctor: "One",
+        CouldNotAffordDoctor: "No",
+        RecentCheckup: "Within past year"
+      },
+      medium: {
+        Age: "54",
+        BMI: "31.0",
+        Sex: "Male",
+        AgeGroup: "50-54",
+        GeneralHealth: "Good",
+        SleepHours: "6",
+        PhysicalHealthDays: "5",
+        MentalHealthDays: "4",
+        PhysicalDistressFlag: "No",
+        MentalDistressFlag: "No",
+        AsthmaEver: "Yes",
+        AsthmaCurrent: "No",
+        HeartAttack: "No",
+        CoronaryHeartDisease: "No",
+        Stroke: "No",
+        Diabetes: "Prediabetes",
+        Depression: "No",
+        KidneyDisease: "No",
+        Arthritis: "Yes",
+        DifficultyWalking: "No",
+        ExercisePastMonth: "No",
+        Smoked100: "Yes",
+        SmokingFrequency: "Not at all",
+        CurrentSmokerFlag: "No",
+        AlcoholPast30Days: "Yes",
+        AvgDrinksPerOccasion: "2",
+        HasInsuranceFlag: "Yes",
+        HasPersonalDoctor: "One",
+        CouldNotAffordDoctor: "No",
+        RecentCheckup: "Within past year"
+      },
+      high: {
+        Age: "68",
+        BMI: "34.5",
+        Sex: "Male",
+        AgeGroup: "65-69",
+        GeneralHealth: "Poor",
+        SleepHours: "5",
+        PhysicalHealthDays: "20",
+        MentalHealthDays: "12",
+        PhysicalDistressFlag: "Yes",
+        MentalDistressFlag: "Yes",
+        AsthmaEver: "Yes",
+        AsthmaCurrent: "Yes",
+        HeartAttack: "Yes",
+        CoronaryHeartDisease: "Yes",
+        Stroke: "No",
+        Diabetes: "Yes",
+        Depression: "Yes",
+        KidneyDisease: "Yes",
+        Arthritis: "Yes",
+        DifficultyWalking: "Yes",
+        ExercisePastMonth: "No",
+        Smoked100: "Yes",
+        SmokingFrequency: "Every day",
+        CurrentSmokerFlag: "Yes",
+        AlcoholPast30Days: "No",
+        AvgDrinksPerOccasion: "0",
+        HasInsuranceFlag: "Yes",
+        HasPersonalDoctor: "More than one",
+        CouldNotAffordDoctor: "Yes",
+        RecentCheckup: "Within past year"
+      }
+    };
+
+    function setField(name, value) {
+      const field = document.querySelector(`[name="${name}"]`);
+      if (!field) return;
+
+      const hasOption = field.tagName !== "SELECT" ||
+        Array.from(field.options).some(option => option.value === value);
+
+      if (hasOption) {
+        field.value = value;
+      }
+    }
+
+    document.querySelectorAll("[data-example]").forEach(button => {
+      button.addEventListener("click", () => {
+        const example = examples[button.dataset.example];
+        Object.entries(example).forEach(([name, value]) => setField(name, value));
+        document.querySelectorAll("[data-example]").forEach(btn => btn.classList.remove("active"));
+        button.classList.add("active");
+        document.querySelector("#riskForm").scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
+
+    const form = document.querySelector("#riskForm");
+    const submitBtn = document.querySelector("#submitBtn");
+
+    form.addEventListener("submit", () => {
+      submitBtn.textContent = "Predicting...";
+      submitBtn.disabled = true;
+    });
+
+    form.addEventListener("reset", () => {
+      document.querySelectorAll("[data-example]").forEach(btn => btn.classList.remove("active"));
+      setTimeout(() => {
+        document.querySelector(".hero").scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 0);
+    });
+  </script>
+</body>
+</html>
